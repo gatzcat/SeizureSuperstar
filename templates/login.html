@@ -1,0 +1,42 @@
+{% from "_formhelpers.html" import render_field %}
+
+{% extends "layout.html" %}
+
+{% block title %}
+Login
+{% endblock %}
+
+{% block jumbo %}
+{% if current_user.is_authenticated %}
+<h1 class="display-1">Hey {{ current_user.username }}!</h1> 
+<p class="display-6">You're already logged in! Logging in again will close your session.</p>
+{% else %}
+<h1 class="display-4">Login, Seizure Superstar!</h1>
+{% endif %}
+{% endblock %}
+
+{% block body %}
+<main class="form-loginout">
+  <center>
+      <form action="/login" method="post">
+      <img class="mb-4" src="/static/Lightning.ico">
+
+      <div>
+        {{ form.csrf_token }}
+        {{ render_field(form.username, class="form-control", placeholder="Username") }}
+      </div>
+      </div>
+      <div>
+        {{ render_field(form.password, class="form-control", placeholder="Password") }}
+      </div>
+
+      <div class="checkbox mb-3">
+        <small class="text-muted">Remember Me</small>{{ render_field(form.remember)}}
+      </div>
+      <button class="w-100 btn btn-lg btn-dark" type="submit">Sign in</button>
+      <p>Don't have an account yet? <a href="/">Register here!</a> </p>
+      <p class="mt-5 mb-3 text-muted">&copy; Chronic Champion 2021</p>
+    </form>
+  </center>
+</main>
+{% endblock %}

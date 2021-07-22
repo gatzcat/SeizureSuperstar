@@ -1,0 +1,92 @@
+{% from "_formhelpers.html" import render_field %}
+
+{% extends "layout.html" %}
+
+{% block title %}
+Home
+{% endblock %}
+
+{% block jumbo %}
+      <div class="col-lg-7 text-center text-lg-start">
+        <h1 class="display-4 fw-bold lh-1 mb-3">Hello, Superstar! </h1>
+        <p class="lead">This website is designed for strong people with electrical minds... just like you! </p>
+        <p class="col-lg-10 fs-4">Making a webapp is hard, but dealing with seizures is even more difficult! This web app hopes to help you, <b>awesome superstar</b>, to have slightly less things to worry about. Unfortunately, as the dev is not a pro, this web app is probably not the best. If you are a pro who think you can make it better, let's get in touch!</p>
+      </div>
+      <div class="col-md-10 mx-auto col-lg-5">
+        <form class="p-4 p-md-5 border rounded-3 bg-light" action="/" method="post">
+          <div class="mb-3">
+            {{ form.csrf_token }}
+            {{ render_field(form.username, class="form-control", placeholder="Username") }}
+          </div>
+          <div class="mb-3">
+            {{ render_field(form.email, class="form-control", placeholder="Email") }}
+          </div>
+          <div class="mb-3">
+            {{ render_field(form.password, class="form-control", placeholder="Password") }}
+          </div>
+          <div class="mb-3">
+            {{ render_field(form.confirm, class="form-control", placeholder="Repeat Password") }}
+          </div>
+          <div class="checkbox mb-3">
+            <label>
+              <input type="checkbox" value="remember-me"> Remember me
+            </label>
+          </div>
+          <button class="w-100 btn btn-lg btn-dark" type="submit">Sign up</button>
+          <p>Already have an account? <a href="/login">Login!</a></p>
+          <hr class="my-4">
+          <small class="text-muted">By clicking "Sign up", you agree to the terms of use.</small>
+        </form>
+      </div>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="row justify-content-evenly">
+    <h3> Check out your newfound Superstar Powers!</h3>
+  </div>
+  <div class="row justify-content-evenly">
+    <div class="col-sm-6" style="width: 18rem;">
+      <div class="card">
+        <div class="card-body">
+          <h1 class="mainpageicon"><i class="bi bi-emoji-sunglasses"></i></h1>
+          <h5 class="card-title">Medison</h5>
+          <p class="card-text">Keep forgetting your medication? Ran out of pills again? We've all been there. Don't worry, together with Medison, your faithful medication companion you can be sure your Med-is-ON! (not off)</p>
+          <a href="/medison" class="btn btn-dark">Let's Go!</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6" style="width: 18rem;">
+      <div class="card">
+        <div class="card-body">
+          <h1 class="mainpageicon"><i class="bi bi-journal-medical"></i></h1>
+          <h5 class="card-title">Chronolog</h5>
+          <p class="card-text">A key part of getting to know your condition better is to use a symptoms tracker. Use the chronolog to communicate with your future instances of yourself and your doctor(s) and track patterns. </p>
+          <a href="/chronolog" class="btn btn-dark">Go somewhere</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6" style="width: 18rem;">
+      <div class="card">
+        <div class="card-body">
+          <h1 class="mainpageicon"><i class="bi bi-clock"></i></h1>
+          <h5 class="card-title">Doctor When+</h5>
+          <p class="card-text">Get organised and don't miss your next opportunity to wait in the hospital for hours. Make sure you do not miss your next hospital appearance.</p>
+          <a href="#" class="btn btn-dark">Go somewhere</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6" style="width: 18rem;">
+      <div class="card">
+        <div class="card-body">
+          <h1 class="mainpageicon"><i class="bi bi-journal-bookmark-fill"></i></h1>
+          <h5 class="card-title">TLDRepeat+</h5>
+          <p class="card-text">A new health professional has appeared! Need to tell them your story <i>all over again</i>? Write it down so they can read it themselves!</p>
+          <a href="/tldrepeat" class="btn btn-dark">Stop Repeating</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

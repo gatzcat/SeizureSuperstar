@@ -1,0 +1,53 @@
+.jumbotron {
+    background-color: #FFC300;
+    color: black;
+    margin-bottom: 2rem;
+    padding: 2rem 1rem;
+    text-align: center;
+}
+
+.lead {
+    color:#581845;
+}
+
+.card {
+    text-align: center;
+}
+
+.mainpageicon {
+    color: #581845;
+}
+
+.diplay-4 {
+    color: black;
+    font-size: 48px;
+}
+
+/* css for login/logout adapted from Bootstrap examples @ https://getbootstrap.com/docs/5.0/examples/#custom-components */
+
+.form-loginout {
+    width: 100%;
+    max-width: 330px;
+    padding: 15px;
+    margin: auto;
+  }
+  
+  .form-loginout .checkbox {
+    font-weight: 400;
+  }
+  
+  .form-loginout .form-floating:focus-within {
+    z-index: 2;
+  }
+  
+  .form-loginout input[type="email"] {
+    margin-bottom: -1px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+  
+  .form-loginout input[type="password"] {
+    margin-bottom: 10px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
