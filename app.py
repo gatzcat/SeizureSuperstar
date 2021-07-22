@@ -1,15 +1,16 @@
 
 from datetime import datetime, date
-from flask import Flask, flash, redirect, render_template, request, session
+from flask import Flask, flash, redirect, render_template, request
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
+from sqlalchemy.orm import backref
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
-from wtforms import BooleanField, DateField, SelectField, StringField, PasswordField, validators
+from wtforms import BooleanField, DateField, SelectField, StringField, PasswordField
 from wtforms.fields.core import DateTimeField, IntegerField, SelectMultipleField
 from wtforms.fields.simple import TextAreaField
-from wtforms.validators import InputRequired, EqualTo, Email, Length
+from wtforms.validators import InputRequired, EqualTo, Email, Length, Optional
 
 from variables import *
 
@@ -58,7 +59,7 @@ class Medison(db.Model):
 class Chronolog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date_time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    seizure_type = db.Column(db.String(50), db.ForeignKey('tldr.seizure_type'))
+    seizure_type = db.Column(db.String(50), nullable=False)
     duration = db.Column(db.Integer, nullable=False)
     pre_ictal = db.Column(db.String(500))
     during = db.Column(db.String(500))
@@ -72,8 +73,8 @@ class Chronolog(db.Model):
 class Tldr(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
-    age = db.Column(db.Integer, nullable=False)   
-    startdate = db.Column(db.Date, nullable=False)
+    age = db.Column(db.String(50), nullable=False)   
+    startdate = db.Column(db.String(50), nullable=False)
     diagnosis = db.Column(db.String(500))
     diagnosis_description = db.Column(db.String(500))
     family_history = db.Column(db.String(50))
@@ -87,13 +88,15 @@ class Tldr(db.Model):
     post_symptoms = db.Column(db.String(500))
     post_extra = db.Column(db.String(500))
     triggers = db.Column(db.String(50))
-    triggers_description = db.Column(db.String(500))
-    triggers_extra = db.Column(db.String(500))
+    trigger_description = db.Column(db.String(500))
+    trigger_extra = db.Column(db.String(500))
     current_meds = db.Column(db.String(50))
     cmeds_name = db.Column(db.String(500))
     prev_meds = db.Column(db.String(50))
     pmeds_name = db.Column(db.String(500))
     diet = db.Column(db.String(50))
+    datetime = db.Column(db.DateTime, default=datetime.utcnow)
+    tldr = db.relationship('User', backref='TLDR')
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 
@@ -128,31 +131,37 @@ class Register(FlaskForm):
 
 
 # TLDRepeat form
-class Tldr(FlaskForm):
-    name = StringField('Name', validators=[InputRequired('Please provide this information')])
-    age = StringField('Age', validators=[InputRequired('Please provide this information')])
-    startdate = DateField('Seizure Start Date', validators=[InputRequired('Please provide this information')])
-    diagnosis = SelectField('Diagnosis', choices=[('have a'), ('don\'t have a')], validators=[InputRequired('Please provide this information')])
-    diagnosis_description = TextAreaField('Diagnosis Details (if any)')
-    family_history = SelectField('Diagnosis', choices=[('have a'), ('don\'t have any'), ('am not sure about')], validators=[InputRequired('Please provide this information')])
-    fh_description = TextAreaField('Family History Details (if any)')
-    pre_ictal = SelectField('Any Pre-seizure Symptoms?', choices=[('always can'), ('occasionally can'), ('cannot')], validators=[InputRequired('Please provide this information')])
-    pre_symptoms = SelectMultipleField('Pre-ictal symptoms? (if any)', choices=PRE_ICTAL)
-    pre_extra = TextAreaField('Any other descriptions or symptoms')
-    seizure_description = SelectMultipleField('Seizure Description', choices=DURING)
-    seizure_extra = _extra = TextAreaField('Any other descriptions or symptoms')
-    post_ictal = StringField('Post-ictal symptoms?', validators=[InputRequired('Please provide this information')])
-    post_symptoms = SelectMultipleField('Post-ictal symptoms?', choices=POST_ICTAL)
-    post_extra = TextAreaField('Any other descriptions or symptoms')
-    triggers = SelectField('Trigger Description', choices=[('know'), ('do not know')], validators=[InputRequired('Please provide this information')])
-    trigger_description = SelectMultipleField('Trigger Description', choices=TRIGGERS)
-    trigger_extra = TextAreaField('Other Triggers')
-    current_meds = SelectField('Current Medication', choices=[('am'), ('am not')])
-    cmeds_name = SelectMultipleField('Current Medication', choices=MEDICATION)
-    prev_meds = SelectField('Previous Medication', choices=[('have'), ('have not')])
-    pmeds_name = SelectMultipleField('Previous Medication', choices=MEDICATION)
-    diet = SelectField('Diet Type', choices=[('Regular'), ('Vegetarian'), ('Vegan'), ('Ketogenic'), ('Paleo'), ('Gluten-free'), ('Dairy-free'), ('Pescetarians'), ('Paleo')], validators=[InputRequired('Please provide this information')])
+required = validators = [InputRequired('Please provide this information')]
 
+option = validators = [Optional()]
+
+
+class Tldrepeat(FlaskForm):
+    name = StringField('Name', required)
+    age = StringField('Age', required)
+    startdate = StringField('Seizure Start Date', required)
+    diagnosis = SelectField('Diagnosis', required, choices=[('have a'), ('don\'t have a')])
+    family_history = SelectField('Diagnosis', required, choices=[('have a'), ('don\'t have any'), ('am not sure about')])
+    pre_ictal = SelectField('Any Pre-seizure Symptoms?', required, choices=[('always can'), ('occasionally can'), ('cannot')])
+    seizure_description = SelectMultipleField('Seizure Description', required, choices=DURING)
+    post_ictal = StringField('Post-ictal symptoms?', required)
+    triggers = SelectField('Trigger Description', required, choices=[('know'), ('do not know')])
+    current_meds = SelectField('Current Medication', required, choices=[('am'), ('am not')])
+    prev_meds = SelectField('Previous Medication', required, choices=[('have'), ('have not')])
+    diet = SelectField('Diet Type', required, choices=[('Regular'), ('Vegetarian'), ('Vegan'),
+                                                       ('Ketogenic'), ('Paleo'), ('Gluten-free'), ('Dairy-free'), ('Pescetarians'), ('Paleo')])
+    diagnosis_description = TextAreaField('Diagnosis Details (if any)', option)
+    fh_description = TextAreaField('Family History Details (if any)', option)
+    pre_symptoms = SelectMultipleField('Pre-ictal symptoms? (if any)', option, choices=PRE_ICTAL)
+    pre_extra = TextAreaField('Any other descriptions or symptoms', option)
+    seizure_extra = TextAreaField('Any other descriptions or symptoms', option)
+    post_symptoms = SelectMultipleField('Post-ictal symptoms?', option, choices=POST_ICTAL)
+    post_extra = TextAreaField('Any other descriptions or symptoms', option)
+    trigger_description = SelectMultipleField('Trigger Description', option, choices=TRIGGERS)
+    trigger_extra = TextAreaField('Other Triggers', option)
+    cmeds_name = SelectMultipleField('Current Medication', option, choices=MEDICATION)
+    pmeds_name = SelectMultipleField('Previous Medication', option, choices=MEDICATION)
+    
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -167,6 +176,7 @@ def index():
             new_user = User(username=username, email=email, password=password)
             db.session.add(new_user)
             db.session.commit()
+            logout_user()
 
             flash('You have been registered successfully. Please login!')
             return redirect('/login')
@@ -177,11 +187,49 @@ def index():
         return render_template('index.html', form=form)
 
 
-@app.route('/tldrepeat')
+@app.route('/tldrepeat', methods=['GET', 'POST'])
 @login_required
 def tldrepeat():
-    form = Tldr()
-    return render_template('tldr.html', form=form)
+    exist = Tldr.query.filter_by(user_id=current_user.id).order_by(Tldr.id.desc()).first()
+    form = Tldrepeat()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+
+            pre_symptoms = unlist(form.pre_symptoms.data, PRE_ICTAL)
+            print(pre_symptoms)
+            
+            post_symptoms = unlist(form.post_symptoms.data, POST_ICTAL)
+            print(post_symptoms)
+
+            cmeds_name = unlist(form.cmeds_name.data, MEDICATION)
+            print(cmeds_name)
+            
+            trigger_description = unlist(form.trigger_description.data, TRIGGERS)
+            print(trigger_description)
+            
+            pmeds_name = unlist(form.pmeds_name.data, MEDICATION)
+            print(pmeds_name)
+            
+            seizure_description = unlist(form.seizure_description.data, DURING)
+            print(seizure_description)
+
+
+            tldr = Tldr(name=form.name.data, age=form.age.data, startdate=form.startdate.data, diagnosis=form.diagnosis.data, diagnosis_description=form.diagnosis_description.data, 
+                        family_history=form.family_history.data, fh_description=form.fh_description.data, pre_ictal=form.pre_ictal.data, pre_extra=form.pre_extra.data, seizure_extra=form.seizure_extra.data, 
+                        post_ictal=form.post_ictal.data, post_extra=form.post_extra.data, triggers=form.triggers.data, 
+                        trigger_extra=form.trigger_extra.data, current_meds=form.current_meds.data, 
+                        prev_meds=form.prev_meds.data, diet=form.diet.data, user_id=current_user.id, pre_symptoms=pre_symptoms, post_symptoms=post_symptoms, cmeds_name=cmeds_name, trigger_description=trigger_description, pmeds_name=pmeds_name, seizure_description=seizure_description)
+            db.session.add(tldr)
+            db.session.commit()
+            print(Tldr.query.filter_by(user_id=current_user.id).all())
+
+            flash('Great Job!')
+            return redirect('tldrepeat')
+        else:
+            flash('Something went wrong')
+            return render_template('tldr.html', form=form, exist=exist)
+    else:
+        return render_template('tldr.html', form=form, exist=exist)
 
 
 @app.route('/drwhen')
@@ -192,7 +240,7 @@ def drwhen():
 
 @app.route('/chronolog')
 @login_required
-def loggy():
+def chronolog():
     return render_template('chronolog.html')
 
 

@@ -41,7 +41,8 @@ DURING = [
     ('19', 'I lose bladder or bowel control'), 
     ('20', 'I have difficulty breathing'),
     ('21', 'I experience hearing loss'),
-    ('22', 'I have memory lapses')
+    ('22', 'I have memory lapses'),
+    ('23', 'I don\'t know yet')
 ]
 
 POST_ICTAL = [
@@ -78,18 +79,23 @@ TRIGGERS = [
     ('14', 'Thirst')
 ]
 
-#with open("meds.csv", "r") as file:
-#    reader = csv.reader(file)
-#    list = []
-#    x = 1
-#    for row in reader:
-#        row = ' '.join(row)
-#        row = str(x), row
-#        list.append(row)
-#        x += 1
+# The list could have been hard coded but calling from a CSV probably allows for easier updating when new medications are released
+with open("meds.csv", "r") as file:
+    reader = csv.reader(file)
+    list = []
+    x = 1
+    for row in reader:
+        row = ' '.join(row)
+        row = str(x), row
+        list.append(row)
+        x += 1
 
-#    MEDICATION = tuple(list)
+    MEDICATION = list
 
-MEDICATION = [
-    ('1', '*Brivaracetam*'), ('2', '*Cannabidiol oral solution*'), ('3', 'Epidiolex'), ('4', '*Carbamazepine*'), ('5', 'Epitol'), ('6', 'Tegretol'), ('7', '*Carbamazepine-XR*'), ('8', 'Carbatrol'), ('9', '*Tegretol XR*'), ('10', 'Cenobamate'), ('11', 'Xcopri'), ('12', '*Clobazam*'), ('13', 'Onfi'), ('14', 'Sympazan'), ('15', '*Clonazepam*'), ('16', 'Epitril'), ('17', 'Klonopin'), ('18', 'Rivotril'), ('19', '*Diazepam*'), ('20', 'Valtoco'), ('21', 'Diastat'), ('22', '*Divalproex Sodium*'), ('23', 'Depacon'), ('24', 'Depakote'), ('25', 'Epival'), ('26', '*Divalproex Sodium-ER*'), ('27', 'Depakote ER'), ('28', '*Eslicarbazepine Acetate*'), ('29', 'Aptiom'), ('30', '*Ethosuximide*'), ('31', 'Zarontin'), ('32', '*Ezogabine*'), ('33', 'Potiga'), ('34', '*Felbamate*'), ('35', 'Felbatol'), ('36', '*Fenfluramine*'), ('37', '*Gabapentin*'), ('38', 'Neurontin'), ('39', '*Lacosamide*'), ('40', 'Vimpat'), ('41', '*Lamotrigine*'), ('42', 'Lamictal'), ('43', '*Levetiracetam*'), ('44', 'Keppra'), ('45', 'Roweepra'), ('46', '*Levetiracetam XR*'), ('47', 'Keppra XR'), ('48', '*Lorazepam*'), ('49', 'Ativan'), ('50', '*Midazolam*'), ('51', 'Nayzilam'), ('52', '*Oxcarbazepine*'), ('53', 'Oxtellar XR'), ('54', 'Trileptal'), ('55', '*Perampanel*'), ('56', 'Fycompa'), ('57', '*Phenobarbital*'), ('58', '*Phenytoin*'), ('59', 'Dilantin'), ('60', 'Epanutin'), ('61', 'Phenytek'), ('62', '*Pregabalin*'), ('63', 'Lyrica'), ('64', '*Primidone*'), ('65', 'Mysoline'), ('66', '*Rufinamide*'), ('67', 'Banzel'), ('68', 'Inovelon'), ('69', '*Stiripentol*'), ('70', 'Diacomit'), ('71', '*Tiagabine Hydrochloride*'), ('72', 'Gabitril'), ('73', '*Topiramate*'), ('74', 'Topamax'), ('75', '*Topiramate XR*'), ('76', 'Qudexy XR'), ('77', 'Trokendi XR*'), ('78', '*Valproic Acid*'), ('79', 'Convulex'), ('80', 'Depakene'), ('81', 'Depakine'), ('82', 'Orfiril'), ('83', 'Valporal'), ('84', 'Valprosid'), ('85', '*Vigabatrin*'), ('86', 'Sabril'), ('87', '*Zonisamide*'), ('88', 'Zonegran')
-]
+def unlist(data, array):
+        entry = []
+        for d in data:
+            entry.append(array[int(d) - 1][1]
+            + ', ')
+        entry = ''.join(entry)
+        return entry

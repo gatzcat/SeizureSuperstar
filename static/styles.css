@@ -51,3 +51,16 @@
     border-top-left-radius: 0;
     border-top-right-radius: 0;
   }
+
+  .tldr input:required {
+    border: 2px dashed #900c3f;
+    background:LightGoldenRodYellow
+  }
+
+  .tldr select:required {
+    border: 2px dashed #900c3f
+  }
+  
+  .table > tbody > tr > td {
+    vertical-align: top;
+}

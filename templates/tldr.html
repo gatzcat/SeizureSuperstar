@@ -12,76 +12,206 @@ TLDRepeat
 
 {% block body %}
     <div class="container">
-        <div class="row justify-content-evenly">
-            <h3>Let's get the story down once and for all!</h3>
-            
-            <form action="/tldr" method="post" >
-                <p>
-                    Hello, my name is {{ render_field(form.name, class="form-inline mb-2 mr-sm-2", placeholder="eg. Champ") }}, 
-                    I am currently {{ render_field(form.age, class="col-1 form-inline mb-2 mr-sm-2", placeholder="eg. 23") }} years old.
-                    I started having seizures around {{ render_field(form.startdate, class="form-inline mb-2 mr-sm-2", placeholder="eg. 2018") }}
-                </p>
-                <p> 
-                    I {{ render_field(form.diagnosis, class="form-inline mb-2 mr-sm-2") }} diagnosis  
-                    <br>{{render_field(form.diagnosis_description, class="form-control", placeholder="If applicable, provide details about your diagnosis eg. Generalised Epilepsy, Unknown seizure types") }}
-                </p>
-                <p>
-                    I {{ render_field(form.family_history, class="form-inline mb-2 mr-sm-2") }} my family history of seizures or epilepsy
-                    <br>{{render_field(form.diagnosis_description, class="form-control", placeholder="If applicable, provide more details here. Eg. My grandmother on my father's side has also been diagnosed with generalised epilepsy") }}
-                </p> 
-                <p>
-                    I {{render_field(form.pre_ictal)}} tell when I am going to have a seizure 
-                    <br>
-                        <small class="text-muted">
-                            If applicable, select all that apply (Ctrl+Click)
-                        </small>
-                    <br>{{ render_field(form.pre_symptoms, class="form-select") }}
-                    <br>{{render_field(form.pre_extra, class="form-control mb-1", placeholder="If applicable, provide more details here. Eg. I also (have symptom not in list) ") }}
-                </p>
-                <p>
-                    The following happens during my seizures:
-                    <br>
-                        <small class="text-muted">
-                            If applicable, select all that apply (Ctrl+Click)
-                        </small>
-                    <br>{{ render_field(form.seizure_description, class="form-select" ) }}
-                    <br>{{render_field(form.seizure_extra, class="form-control mb-1", placeholder="If applicable, provide more details here. Eg. I also (have symptom not in list) ") }}
-                </p>
-                <p>
-                    After the seizures, I recover {{render_field(form.post_ictal, class="form-inline col-4 mb-3", placeholder="Eg. Immediately/in about half an hour/two days")}}
-                    <br>{{render_field(form.post_symptoms, class="form-select")}}
-                    <br>{{render_field(form.post_extra, class="form-control", placeholder="If applicable, provide more details here. Eg. I also (have symptom not in list)") }}
-                </p>
-                <p>
-                    I {{ render_field(form.triggers, class="form-inline mb-2 mr-sm-2") }} my triggers
-                    <br>
-                        <small class="text-muted">
-                            If applicable, select all that apply (Ctrl+Click)
-                        </small>
-                    <br>{{render_field(form.trigger_description, class="form-select")}}
-                    <br>{{render_field(form.trigger_extra, class="form-control", placeholder="If applicable, provide more details here. Eg. Active ingredient in a certain herbal ingredient") }}
-                </p>
-                <p>
-                    I {{ render_field(form.current_meds, class="form-inline mb-2 mr-sm-2") }} currently on seizure medication
-                    <br>
-                        <small class="text-muted">
-                            If applicable, select all that apply (Ctrl+Click)
-                        </small>
-                    <br>{{render_field(form.cmeds_name, class="form-select")}}
-                </p>
-                <p>
-                    I have/have not previously tried seizure medication
-                    <br>
-                        <small class="text-muted">
-                            If applicable, select all that apply (Ctrl+Click)
-                        </small>
-                    <br>{{render_field(form.pmeds_name, class="form-select")}}
-                </p>
-                <p>
-                    I am currently following a {{ render_field(form.diet, class="form-inline mb-2 mr-sm-2") }} diet
-                </p>
-                <button class="w-100 btn btn-lg btn-dark" type="submit">Repeat for the Last Time!</button>
-            </form>
-        </div>
+        <table class="table">
+            <tr>
+                {% if exist %}
+                    <td>
+                        <div class="container">
+                            <h3>Your Summary</h3>
+                            <small>(as of {{ exist.datetime }})</small>
+                                <p>
+                                    Hello, my name is {{ exist.name }}, I am currently {{ exist.age }} years old. I started having seizures around {{ exist.startdate }}
+                                </p>
+                                <p> 
+                                    I {{ exist.diagnosis }} diagnosis {{exist.diagnosis_description }}
+                                </p>
+                                <p>
+                                    I {{ exist.family_history }} family history of seizures or epilepsy {{exist.diagnosis_description }}
+                                </p> 
+                                <p>
+                                    I {{exist.pre_ictal }} tell when I am going to have a seizure {{ exist.pre_symptoms }} {{ exist.pre_extra }}
+                                </p>
+                                <p>
+                                    The following happens during my seizures: {{ exist.seizure_description }}{{exist.seizure_extra }}
+                                </p>
+                                <p>
+                                    After the seizures, I recover {{exist.post_ictal }} {{ exist.post_symptoms }} {{ exist.post_extra }}
+                                </p>
+                                <p>
+                                    I {{ exist.triggers }} my triggers {{exist.trigger_description }} {{ exist.trigger_extra }}
+                                </p>
+                                <p>
+                                    I {{ exist.current_meds }} currently on seizure medication {{exist.cmeds_name }}
+                                    I {{exist.prev_meds }} previously tried seizure medication {{exist.pmeds_name }}
+                                </p>
+                                <p>
+                                    I am currently following a {{ exist.diet }} diet.
+                                </p>
+                        </div>
+                    </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h3>Mistake(s)? Try again!</h3>
+                            <div class="container">
+                                <form action="/tldrepeat" method="post" >
+                                    {{ form.csrf_token }}
+                                    <p>
+                                        Hello, my name is {{ render_field(form.name, class="tldr form-inline mb-2 mr-sm-2", placeholder="eg. Champ") }}, 
+                                        I am currently {{ render_field(form.age, class="tldr col-1 form-inline mb-2 mr-sm-2", placeholder="eg. 23") }} years old.
+                                        I started having seizures around {{ render_field(form.startdate, class="tldr form-inline mb-2 mr-sm-2", placeholder="eg. April 2018") }}
+                                    </p>
+                                    <p> 
+                                        I {{ render_field(form.diagnosis, class="tldr form-inline mb-2 mr-sm-2") }} diagnosis  
+                                        <br>{{render_field(form.diagnosis_description, class="tldr form-control", placeholder="If applicable, provide details about your diagnosis eg. Generalised Epilepsy, Unknown seizure types") }}
+                                    </p>
+                                    <p>
+                                        I {{ render_field(form.family_history, class="tldr form-inline mb-2 mr-sm-2") }} family history of seizures or epilepsy
+                                        <br>{{render_field(form.diagnosis_description, class="tldr form-control", placeholder="If applicable, provide more details here. Eg. My grandmother on my father's side has also been diagnosed with generalised epilepsy") }}
+                                    </p> 
+                                    <p>
+                                        I {{render_field(form.pre_ictal)}} tell when I am going to have a seizure 
+                                        <br>
+                                            <small class="text-muted">
+                                                If applicable, select all that apply (Ctrl+Click)
+                                            </small>
+                                        <br>{{ render_field(form.pre_symptoms, class="tldr form-select") }}
+                                        <br>{{render_field(form.pre_extra, class="tldr form-control mb-1", placeholder="If applicable, provide more details here. Eg. I also (have symptom not in list) ") }}
+                                    </p>
+                                    <p>
+                                        The following happens during my seizures:
+                                        <br>
+                                            <small class="text-muted">
+                                                Select at least one, select all that apply (Ctrl+Click)
+                                            </small>
+                                        <br>{{ render_field(form.seizure_description, class="tldr form-select" ) }}
+                                        <br>{{render_field(form.seizure_extra, class="tldr form-control mb-1", placeholder="If applicable, provide more details here. Eg. I also (have symptom not in list) ") }}
+                                    </p>
+                                    <p>
+                                        After the seizures, I recover {{render_field(form.post_ictal, class="tldr form-inline col-4 mb-3", placeholder="Eg. Immediately/in about half an hour/two days")}}
+                                        <br>
+                                            <small class="text-muted">
+                                                If applicable, select all post-icatal symptoms that apply (Ctrl+Click)
+                                            </small>
+                                        <br>{{render_field(form.post_symptoms, class="tldr form-select")}}
+                                        <br>{{render_field(form.post_extra, class="tldr form-control", placeholder="If applicable, provide more details here. Eg. I also (have symptom not in list)") }}
+                                    </p>
+                                    <p>
+                                        I {{ render_field(form.triggers, class="tldr form-inline mb-2 mr-sm-2") }} my triggers
+                                        <br>
+                                            <small class="text-muted">
+                                                If applicable, select all that apply (Ctrl+Click)
+                                            </small>
+                                        <br>{{render_field(form.trigger_description, class="tldr form-select")}}
+                                        <br>{{render_field(form.trigger_extra, class="tldr form-control", placeholder="If applicable, provide more details here. Eg. Active ingredient in a certain herbal ingredient") }}
+                                    </p>
+                                    <p>
+                                        I {{ render_field(form.current_meds, class="tldr form-inline mb-2 mr-sm-2") }} currently on seizure medication
+                                        <br>
+                                            <small class="text-muted">
+                                                If applicable, select all that apply (Ctrl+Click)
+                                            </small>
+                                        <br>{{render_field(form.cmeds_name, class="tldr form-select")}}
+                                    </p>
+                                    <p>
+                                        I {{render_field(form.prev_meds, class="tldr form-inline mb-2 mr-sm-2")}} previously tried seizure medication
+                                        <br>
+                                            <small class="text-muted">
+                                                If applicable, select all that apply (Ctrl+Click)
+                                            </small>
+                                        <br>{{render_field(form.pmeds_name, class="tldr form-select")}}
+                                    </p>
+                                    <p>
+                                        I am currently following a {{ render_field(form.diet, class="tldr form-inline mb-2 mr-sm-2") }} diet
+                                    </p>
+                                    <button class="w-100 btn btn-lg btn-dark" type="submit">Repeat for the Last Time!</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <td>
+                        <div class="row justify-content-evenly">
+                            <h3>Let's get the story down once and for all!</h3>
+                            <main class="tldr">
+
+                                <form action="/tldrepeat" method="post" >
+                                    {{ form.csrf_token }}
+                                    <p>
+                                        Hello, my name is {{ render_field(form.name, class="tldr form-inline mb-2 mr-sm-2", placeholder="eg. Champ") }}, 
+                                        I am currently {{ render_field(form.age, class="tldr col-1 form-inline mb-2 mr-sm-2", placeholder="eg. 23") }} years old.
+                                        I started having seizures around {{ render_field(form.startdate, class="tldr form-inline mb-2 mr-sm-2", placeholder="eg. April 2018") }}
+                                    </p>
+                                    <p> 
+                                        I {{ render_field(form.diagnosis, class="tldr form-inline mb-2 mr-sm-2") }} diagnosis  
+                                        <br>{{render_field(form.diagnosis_description, class="tldr form-control", placeholder="If applicable, provide details about your diagnosis eg. Generalised Epilepsy, Unknown seizure types") }}
+                                    </p>
+                                    <p>
+                                        I {{ render_field(form.family_history, class="tldr form-inline mb-2 mr-sm-2") }} family history of seizures or epilepsy
+                                        <br>{{render_field(form.diagnosis_description, class="tldr form-control", placeholder="If applicable, provide more details here. Eg. My grandmother on my father's side has also been diagnosed with generalised epilepsy") }}
+                                    </p> 
+                                    <p>
+                                        I {{render_field(form.pre_ictal)}} tell when I am going to have a seizure 
+                                        <br>
+                                            <small class="text-muted">
+                                                If applicable, select all that apply (Ctrl+Click)
+                                            </small>
+                                        <br>{{ render_field(form.pre_symptoms, class="tldr form-select") }}
+                                        <br>{{render_field(form.pre_extra, class="tldr form-control mb-1", placeholder="If applicable, provide more details here. Eg. I also (have symptom not in list) ") }}
+                                    </p>
+                                    <p>
+                                        The following happens during my seizures:
+                                        <br>
+                                            <small class="text-muted">
+                                                Select at least one, select all that apply (Ctrl+Click)
+                                            </small>
+                                        <br>{{ render_field(form.seizure_description, class="tldr form-select" ) }}
+                                        <br>{{render_field(form.seizure_extra, class="tldr form-control mb-1", placeholder="If applicable, provide more details here. Eg. I also (have symptom not in list) ") }}
+                                    </p>
+                                    <p>
+                                        After the seizures, I recover {{render_field(form.post_ictal, class="tldr form-inline col-4 mb-3", placeholder="Eg. Immediately/in about half an hour/two days")}}
+                                        <br>
+                                            <small class="text-muted">
+                                                If applicable, select all post-icatal symptoms that apply (Ctrl+Click)
+                                            </small>
+                                        <br>{{render_field(form.post_symptoms, class="tldr form-select")}}
+                                        <br>{{render_field(form.post_extra, class="tldr form-control", placeholder="If applicable, provide more details here. Eg. I also (have symptom not in list)") }}
+                                    </p>
+                                    <p>
+                                        I {{ render_field(form.triggers, class="tldr form-inline mb-2 mr-sm-2") }} my triggers
+                                        <br>
+                                            <small class="text-muted">
+                                                If applicable, select all that apply (Ctrl+Click)
+                                            </small>
+                                        <br>{{render_field(form.trigger_description, class="tldr form-select")}}
+                                        <br>{{render_field(form.trigger_extra, class="tldr form-control", placeholder="If applicable, provide more details here. Eg. Active ingredient in a certain herbal ingredient") }}
+                                    </p>
+                                    <p>
+                                        I {{ render_field(form.current_meds, class="tldr form-inline mb-2 mr-sm-2") }} currently on seizure medication
+                                        <br>
+                                            <small class="text-muted">
+                                                If applicable, select all that apply (Ctrl+Click)
+                                            </small>
+                                        <br>{{render_field(form.cmeds_name, class="tldr form-select")}}
+                                    </p>
+                                    <p>
+                                        I {{render_field(form.prev_meds, class="tldr form-inline mb-2 mr-sm-2")}} previously tried seizure medication
+                                        <br>
+                                            <small class="text-muted">
+                                                If applicable, select all that apply (Ctrl+Click)
+                                            </small>
+                                        <br>{{render_field(form.pmeds_name, class="tldr form-select")}}
+                                    </p>
+                                    <p>
+                                        I am currently following a {{ render_field(form.diet, class="tldr form-inline mb-2 mr-sm-2") }} diet
+                                    </p>
+                                    <button class="w-100 btn btn-lg btn-dark" type="submit">Repeat for the Last Time!</button>
+                                </form>
+                            </main>
+                        </div>
+                    </td>
+                {% endif %}
+            </tr>
+        </table>
     </div>
 {% endblock %}
