@@ -1,13 +1,13 @@
 import csv 
 
 PRE_ICTAL = [
-    ('1', 'Bitter, acidic taste'),
-    ('2', 'Déja vu (feeling of familiarity with a person, place, or thing without having experienced it)'),
-    ('3', 'Jamais vu (feeling of unfamiliarity with a person, place, or thing despite having already experienced it)'), 
+    ('1', 'Bitter/acidic taste'),
+    ('2', 'Déja vu (feeling of familiarity with a person/place/thing without having experienced it)'),
+    ('3', 'Dizziness'), 
     ('4', 'Flickering vision'), 
     ('5', 'Hallucinations'), 
     ('6', 'Head, arm, or leg pain'),
-    ('7', 'Dizziness'), 
+    ('7', 'Jamais vu (feeling of unfamiliarity with a person/place/thing despite having already experienced it)'), 
     ('8', 'Nausea/stomachache'), 
     ('9', 'Numbness'), 
     ('10', 'Out-of-body sensation'), 
@@ -98,4 +98,5 @@ def unlist(data, array):
             entry.append(array[int(d) - 1][1]
             + ', ')
         entry = ''.join(entry)
+        entry = entry[:-2]
         return entry

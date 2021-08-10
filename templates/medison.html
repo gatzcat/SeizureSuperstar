@@ -1,3 +1,4 @@
+{% from "_formhelpers.html" import render_field %}
 {% extends "layout.html" %}
 
 {% block title %}
@@ -10,4 +11,77 @@ Medison
 {% endblock %}
 
 {% block body %}
+    <div class="container">
+        {% if tldrfile %}
+        Currently it is {{ now }}. <em>We assume that you have not taken your daily dosage yet.</em>
+        <br>Don't see your medication? Time to update your <a href="/tldrepeat">TLDRepeat form</a>!
+        <p><h3>Each day, I take the following medication:</h3></p>
+
+        {% if medfile_exist %}
+        <div class="table-responsive">
+            <table class="table table-hover table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <td>Medication Name</td>
+                        <td>Format</td>
+                        <td>Daily Dosage</td>
+                        <td>Go to the pharmacy on/before</td>
+                        <td>Last Updated</td>
+                    </tr>
+                </thead>
+                {% for m in medfile %}
+                    <tr>
+                        <td>{{ m.medication }}</td>
+                        <td>{{ m.format }} mg</td>
+                        <td>{{ m.daily }} units</td>
+                        <td>{{ m.duedate }}</td>
+                        <td>{{ m.timestamp }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <h3>Update?</h3>
+        {% else %}
+        No previous information retrieved.
+        {% endif %}
+
+        <div class="table-responsive">
+            
+                <table class="table table-hover table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <td>Medication Name</td>
+                            <td>Format</td>
+                            <td>Daily Dosage</td>
+                            <td colspan="2">Remaining Pills/Units</td>
+                        </tr>
+                    </thead>
+                    {% for med in meds %}
+                    <p> 
+                            <tr>
+                                <form action="/medison" method="post">
+                                    {{ form.csrf_token }}
+                                    <td>{{render_field(form.meds, value=med, class="form-inline")}}</td> 
+        
+                                    <td>{{ render_field(form.format, class="tldr form-inline")}} mg</td>
+
+                                    <td>{{ render_field(form.daily, class="tldr form-inline")}} unit(s)/pill(s)</td>
+        
+                                    <td>{{ render_field(form.current_count, class="tldr  form-inline")}} unit(s)</td>
+                                    
+                                    <td><button class="btn-dark" type="submit">Calculate</button></td>
+                            </tr>
+                                </form>
+                            </tr>
+                    </p>
+                    {% endfor %}
+                </table>
+        </div>
+
+        {% else %}
+        We recommend you to first complete the TLDR survey form <a href="/tldrepeat">here</a>.
+
+        {% endif %}
+    </div>
+
 {% endblock %}

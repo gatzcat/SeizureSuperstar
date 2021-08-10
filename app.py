@@ -1,5 +1,6 @@
 
-from datetime import datetime, date
+from datetime import datetime, timedelta
+from time import localtime, strftime
 from flask import Flask, flash, redirect, render_template, request
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_sqlalchemy import SQLAlchemy
@@ -45,14 +46,17 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(280), nullable=False)
 
+    tldr = db.relationship('Tldr', backref='user')
 
-class Medison(db.Model):
+
+class Medisondb(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.String(50), nullable=False)
     medication = db.Column(db.String(50), nullable=False)
-    pills_number = db.Column(db.Integer, nullable=False)
-    pills_mg = db.Column(db.Integer, nullable=False)
-    daily_freq = db.Column(db.Integer, nullable=False)
-    duedate = db.Column(db.DateTime)
+    current_count = db.Column(db.Integer, nullable=False)
+    format = db.Column(db.Integer, nullable=False)
+    daily = db.Column(db.Integer, nullable=False)
+    duedate = db.Column(db.String(50), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 
@@ -96,7 +100,6 @@ class Tldr(db.Model):
     pmeds_name = db.Column(db.String(500))
     diet = db.Column(db.String(50))
     datetime = db.Column(db.DateTime, default=datetime.utcnow)
-    tldr = db.relationship('User', backref='TLDR')
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 
@@ -136,7 +139,7 @@ required = validators = [InputRequired('Please provide this information')]
 option = validators = [Optional()]
 
 
-class Tldrepeat(FlaskForm):
+class Tldrform(FlaskForm):
     name = StringField('Name', required)
     age = StringField('Age', required)
     startdate = StringField('Seizure Start Date', required)
@@ -162,6 +165,12 @@ class Tldrepeat(FlaskForm):
     cmeds_name = SelectMultipleField('Current Medication', option, choices=MEDICATION)
     pmeds_name = SelectMultipleField('Previous Medication', option, choices=MEDICATION)
     
+class Medisonform(FlaskForm):
+    meds = StringField('Medicine Name', required)
+    format = IntegerField('Format', option)
+    daily = IntegerField('Units', required)
+    current_count = IntegerField('Count', required)
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -190,8 +199,8 @@ def index():
 @app.route('/tldrepeat', methods=['GET', 'POST'])
 @login_required
 def tldrepeat():
-    exist = Tldr.query.filter_by(user_id=current_user.id).order_by(Tldr.id.desc()).first()
-    form = Tldrepeat()
+    file = Tldr.query.filter_by(user_id=current_user.id).order_by(Tldr.id.desc()).first()
+    form = Tldrform()
     if request.method == 'POST':
         if form.validate_on_submit():
 
@@ -224,12 +233,15 @@ def tldrepeat():
             print(Tldr.query.filter_by(user_id=current_user.id).all())
 
             flash('Great Job!')
-            return redirect('tldrepeat')
+            return redirect('/tldrepeat')
+        # If form does not validate for whatever reason 
         else:
             flash('Something went wrong')
-            return render_template('tldr.html', form=form, exist=exist)
+            return render_template('tldr.html', form=form, file=file)
+
+    # Else if method is GET
     else:
-        return render_template('tldr.html', form=form, exist=exist)
+        return render_template('tldr.html', form=form, file=file)
 
 
 @app.route('/drwhen')
@@ -244,10 +256,44 @@ def chronolog():
     return render_template('chronolog.html')
 
 
-@app.route('/medison')
+@app.route('/medison', methods=['GET', 'POST'])
 @login_required
 def medison():
-    return render_template('medison.html')
+    # Pulling data from TLDR info
+    tldrfile = Tldr.query.filter_by(user_id=current_user.id).order_by(Tldr.id.desc()).first()
+    if tldrfile:
+        meds = tldrfile.cmeds_name
+        meds = meds.split(',')
+        
+        # Checking for previous Medison info in db 
+        medfile = Medisondb.query.filter_by(user_id=current_user.id)
+        medfile_exist = Medisondb.query.filter_by(user_id=current_user.id).first()
+
+        now = strftime("%A, %d %b %Y %H:%M", localtime())
+
+        form = Medisonform()
+        
+        if request.method == 'POST'and form.validate_on_submit():
+            medication = form.meds.data
+            format = form.format.data
+            daily = form.daily.data
+            current_count = form.current_count.data
+
+            today = datetime.today()
+            daysmore = round(current_count/daily)
+            duedate = today + timedelta(days=daysmore)
+            duedate = duedate.strftime("%A, %d %b %Y") 
+
+            print(medication, format, daily, current_count, duedate)
+
+            medison_info=Medisondb(user_id=current_user.id, timestamp=now, medication=medication, format=format, current_count=current_count, daily=daily, duedate=duedate)
+            db.session.add(medison_info)
+            db.session.commit()
+
+            flash('You will have to go to the pharmacy for more {} on/before {}'.format(medication, duedate))
+            return redirect('/medison')
+
+    return render_template('medison.html', now=now, tldrfile=tldrfile, medfile_exist=medfile_exist, medfile=medfile, meds=meds, form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])

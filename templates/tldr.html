@@ -14,45 +14,45 @@ TLDRepeat
     <div class="container">
         <table class="table">
             <tr>
-                {% if exist %}
+                {% if file %}
                     <td>
                         <div class="container">
                             <h3>Your Summary</h3>
-                            <small>(as of {{ exist.datetime }})</small>
+                            <small>(as of {{ file.datetime }})</small>
                                 <p>
-                                    Hello, my name is {{ exist.name }}, I am currently {{ exist.age }} years old. I started having seizures around {{ exist.startdate }}
+                                    Hello, my name is <em style="color:orangered">{{ file.name }}</em>, I am currently <em style="color:orangered">{{ file.age }}</em> years old. I started having seizures around <em style="color:orangered">{{ file.startdate }}</em>
                                 </p>
                                 <p> 
-                                    I {{ exist.diagnosis }} diagnosis {{exist.diagnosis_description }}
+                                    I <em style="color:orangered">{{ file.diagnosis }}</em> diagnosis <em style="color:orangered">{{file.diagnosis_description }}</em>
                                 </p>
                                 <p>
-                                    I {{ exist.family_history }} family history of seizures or epilepsy {{exist.diagnosis_description }}
+                                    I <em style="color:orangered">{{ file.family_history }}</em> family history of seizures or epilepsy <em style="color:orangered">{{file.diagnosis_description }}</em>
                                 </p> 
                                 <p>
-                                    I {{exist.pre_ictal }} tell when I am going to have a seizure {{ exist.pre_symptoms }} {{ exist.pre_extra }}
+                                    I <em style="color:orangered">{{file.pre_ictal }}</em> tell when I am going to have a seizure <em style="color:orangered">{{ file.pre_symptoms }} {{ file.pre_extra }}</em>
                                 </p>
                                 <p>
-                                    The following happens during my seizures: {{ exist.seizure_description }}{{exist.seizure_extra }}
+                                    The following happens during my seizures: <em style="color:orangered">{{ file.seizure_description }}{{file.seizure_extra }}</em>
                                 </p>
                                 <p>
-                                    After the seizures, I recover {{exist.post_ictal }} {{ exist.post_symptoms }} {{ exist.post_extra }}
+                                    After the seizures, I recover <em style="color:orangered">{{file.post_ictal }} {{ file.post_symptoms }} {{ file.post_extra }}</em>
                                 </p>
                                 <p>
-                                    I {{ exist.triggers }} my triggers {{exist.trigger_description }} {{ exist.trigger_extra }}
+                                    I <em style="color:orangered">{{ file.triggers }}</em> my triggers <em style="color:orangered">{{file.trigger_description }} {{ file.trigger_extra }}</em>
                                 </p>
                                 <p>
-                                    I {{ exist.current_meds }} currently on seizure medication {{exist.cmeds_name }}
-                                    I {{exist.prev_meds }} previously tried seizure medication {{exist.pmeds_name }}
+                                    I <em style="color:orangered">{{ file.current_meds }}</em> currently on seizure medication <em style="color:orangered">{{file.cmeds_name }}</em>
+                                    I <em style="color:orangered">{{file.prev_meds }}</em> previously tried seizure medication <em style="color:orangered">{{file.pmeds_name }}</em>
                                 </p>
                                 <p>
-                                    I am currently following a {{ exist.diet }} diet.
+                                    I am currently following a <em style="color:orangered">{{ file.diet }}</em> diet.
                                 </p>
                         </div>
                     </td>
                     </tr>
                     <tr>
                         <td>
-                            <h3>Mistake(s)? Try again!</h3>
+                            <h3>See Mistake(s)? Try again!</h3>
                             <div class="container">
                                 <form action="/tldrepeat" method="post" >
                                     {{ form.csrf_token }}
@@ -75,7 +75,7 @@ TLDRepeat
                                             <small class="text-muted">
                                                 If applicable, select all that apply (Ctrl+Click)
                                             </small>
-                                        <br>{{ render_field(form.pre_symptoms, class="tldr form-select") }}
+                                        <br>{{ render_field(form.pre_symptoms, class="tldr form-select", size="8") }}
                                         <br>{{render_field(form.pre_extra, class="tldr form-control mb-1", placeholder="If applicable, provide more details here. Eg. I also (have symptom not in list) ") }}
                                     </p>
                                     <p>
@@ -84,7 +84,7 @@ TLDRepeat
                                             <small class="text-muted">
                                                 Select at least one, select all that apply (Ctrl+Click)
                                             </small>
-                                        <br>{{ render_field(form.seizure_description, class="tldr form-select" ) }}
+                                        <br>{{ render_field(form.seizure_description, class="tldr form-select", size="8" ) }}
                                         <br>{{render_field(form.seizure_extra, class="tldr form-control mb-1", placeholder="If applicable, provide more details here. Eg. I also (have symptom not in list) ") }}
                                     </p>
                                     <p>
@@ -93,7 +93,7 @@ TLDRepeat
                                             <small class="text-muted">
                                                 If applicable, select all post-icatal symptoms that apply (Ctrl+Click)
                                             </small>
-                                        <br>{{render_field(form.post_symptoms, class="tldr form-select")}}
+                                        <br>{{render_field(form.post_symptoms, class="tldr form-select", size="8")}}
                                         <br>{{render_field(form.post_extra, class="tldr form-control", placeholder="If applicable, provide more details here. Eg. I also (have symptom not in list)") }}
                                     </p>
                                     <p>
@@ -102,7 +102,7 @@ TLDRepeat
                                             <small class="text-muted">
                                                 If applicable, select all that apply (Ctrl+Click)
                                             </small>
-                                        <br>{{render_field(form.trigger_description, class="tldr form-select")}}
+                                        <br>{{render_field(form.trigger_description, class="tldr form-select", size="8")}}
                                         <br>{{render_field(form.trigger_extra, class="tldr form-control", placeholder="If applicable, provide more details here. Eg. Active ingredient in a certain herbal ingredient") }}
                                     </p>
                                     <p>
@@ -111,7 +111,7 @@ TLDRepeat
                                             <small class="text-muted">
                                                 If applicable, select all that apply (Ctrl+Click)
                                             </small>
-                                        <br>{{render_field(form.cmeds_name, class="tldr form-select")}}
+                                        <br>{{render_field(form.cmeds_name, class="tldr form-select", size="8")}}
                                     </p>
                                     <p>
                                         I {{render_field(form.prev_meds, class="tldr form-inline mb-2 mr-sm-2")}} previously tried seizure medication
@@ -119,7 +119,7 @@ TLDRepeat
                                             <small class="text-muted">
                                                 If applicable, select all that apply (Ctrl+Click)
                                             </small>
-                                        <br>{{render_field(form.pmeds_name, class="tldr form-select")}}
+                                        <br>{{render_field(form.pmeds_name, class="tldr form-select", size="8")}}
                                     </p>
                                     <p>
                                         I am currently following a {{ render_field(form.diet, class="tldr form-inline mb-2 mr-sm-2") }} diet
@@ -135,7 +135,7 @@ TLDRepeat
                             <h3>Let's get the story down once and for all!</h3>
                             <main class="tldr">
 
-                                <form action="/tldrepeat" method="post" >
+                                <form action="/tldrepeat" method="post">
                                     {{ form.csrf_token }}
                                     <p>
                                         Hello, my name is {{ render_field(form.name, class="tldr form-inline mb-2 mr-sm-2", placeholder="eg. Champ") }}, 
@@ -156,7 +156,7 @@ TLDRepeat
                                             <small class="text-muted">
                                                 If applicable, select all that apply (Ctrl+Click)
                                             </small>
-                                        <br>{{ render_field(form.pre_symptoms, class="tldr form-select") }}
+                                        <br>{{ render_field(form.pre_symptoms, class="tldr form-select", size="8") }}
                                         <br>{{render_field(form.pre_extra, class="tldr form-control mb-1", placeholder="If applicable, provide more details here. Eg. I also (have symptom not in list) ") }}
                                     </p>
                                     <p>
@@ -165,7 +165,7 @@ TLDRepeat
                                             <small class="text-muted">
                                                 Select at least one, select all that apply (Ctrl+Click)
                                             </small>
-                                        <br>{{ render_field(form.seizure_description, class="tldr form-select" ) }}
+                                        <br>{{ render_field(form.seizure_description, class="tldr form-select", size="8" ) }}
                                         <br>{{render_field(form.seizure_extra, class="tldr form-control mb-1", placeholder="If applicable, provide more details here. Eg. I also (have symptom not in list) ") }}
                                     </p>
                                     <p>
@@ -174,7 +174,7 @@ TLDRepeat
                                             <small class="text-muted">
                                                 If applicable, select all post-icatal symptoms that apply (Ctrl+Click)
                                             </small>
-                                        <br>{{render_field(form.post_symptoms, class="tldr form-select")}}
+                                        <br>{{render_field(form.post_symptoms, class="tldr form-select", size="8")}}
                                         <br>{{render_field(form.post_extra, class="tldr form-control", placeholder="If applicable, provide more details here. Eg. I also (have symptom not in list)") }}
                                     </p>
                                     <p>
@@ -183,7 +183,7 @@ TLDRepeat
                                             <small class="text-muted">
                                                 If applicable, select all that apply (Ctrl+Click)
                                             </small>
-                                        <br>{{render_field(form.trigger_description, class="tldr form-select")}}
+                                        <br>{{render_field(form.trigger_description, class="tldr form-select", size="8")}}
                                         <br>{{render_field(form.trigger_extra, class="tldr form-control", placeholder="If applicable, provide more details here. Eg. Active ingredient in a certain herbal ingredient") }}
                                     </p>
                                     <p>
@@ -192,7 +192,7 @@ TLDRepeat
                                             <small class="text-muted">
                                                 If applicable, select all that apply (Ctrl+Click)
                                             </small>
-                                        <br>{{render_field(form.cmeds_name, class="tldr form-select")}}
+                                        <br>{{render_field(form.cmeds_name, class="tldr form-select", size="8")}}
                                     </p>
                                     <p>
                                         I {{render_field(form.prev_meds, class="tldr form-inline mb-2 mr-sm-2")}} previously tried seizure medication
@@ -200,7 +200,7 @@ TLDRepeat
                                             <small class="text-muted">
                                                 If applicable, select all that apply (Ctrl+Click)
                                             </small>
-                                        <br>{{render_field(form.pmeds_name, class="tldr form-select")}}
+                                        <br>{{render_field(form.pmeds_name, class="tldr form-select", size="8")}}
                                     </p>
                                     <p>
                                         I am currently following a {{ render_field(form.diet, class="tldr form-inline mb-2 mr-sm-2") }} diet
