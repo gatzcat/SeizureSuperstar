@@ -26,7 +26,7 @@ Medison
                         <td>Format</td>
                         <td>Daily Dosage</td>
                         <td>Go to the pharmacy on/before</td>
-                        <td>Last Updated</td>
+                        <td colspan="2">Last Updated</td>
                     </tr>
                 </thead>
                 {% for m in medfile %}
@@ -34,8 +34,13 @@ Medison
                         <td>{{ m.medication }}</td>
                         <td>{{ m.format }} mg</td>
                         <td>{{ m.daily }} units</td>
-                        <td>{{ m.duedate }}</td>
+                        <td style="color: orangered">{{ m.duedate }}</td>
                         <td>{{ m.timestamp }}</td>
+                        <td>
+                            <form action="/medison" method="post">
+                                <button class="btn-light" name="delete" value="delete {{ m.id }}">Delete</button>
+                            </form>
+                        </td>
                     </tr>
                 {% endfor %}
             </table>
@@ -56,25 +61,29 @@ Medison
                             <td colspan="2">Remaining Pills/Units</td>
                         </tr>
                     </thead>
-                    {% for med in meds %}
+                    
                     <p> 
-                            <tr>
-                                <form action="/medison" method="post">
-                                    {{ form.csrf_token }}
-                                    <td>{{render_field(form.meds, value=med, class="form-inline")}}</td> 
-        
-                                    <td>{{ render_field(form.format, class="tldr form-inline")}} mg</td>
+                        <tr>
+                            <form action="/medison" method="post">
+                                {{ form.csrf_token }}
+                                <td>
+                                    <select name="medication">
+                                        {% for med in meds %}
+                                            <option value="{{med}}">{{med}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </td> 
+    
+                                <td>{{ render_field(form.format, class="tldr form-inline")}} mg</td>
 
-                                    <td>{{ render_field(form.daily, class="tldr form-inline")}} unit(s)/pill(s)</td>
-        
-                                    <td>{{ render_field(form.current_count, class="tldr  form-inline")}} unit(s)</td>
-                                    
-                                    <td><button class="btn-dark" type="submit">Calculate</button></td>
-                            </tr>
-                                </form>
-                            </tr>
+                                <td>{{ render_field(form.daily, class="tldr form-inline")}} unit(s)/pill(s)</td>
+    
+                                <td>{{ render_field(form.current_count, class="tldr  form-inline")}} unit(s)</td>
+                                
+                                <td><button class="btn-dark" type="submit">Calculate</button></td>
+                            </form>
+                        </tr>
                     </p>
-                    {% endfor %}
                 </table>
         </div>
 
