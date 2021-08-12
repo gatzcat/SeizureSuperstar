@@ -5,13 +5,12 @@ from flask import Flask, flash, redirect, render_template, request
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
-from sqlalchemy.orm import backref
-from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
-from wtforms import BooleanField, DateField, SelectField, StringField, PasswordField
-from wtforms.fields.core import DateTimeField, IntegerField, SelectMultipleField
+from wtforms import BooleanField, HiddenField, SelectField, StringField, PasswordField
+from wtforms.fields.html5 import DateTimeLocalField
+from wtforms.fields.core import IntegerField, SelectMultipleField
 from wtforms.fields.simple import TextAreaField
-from wtforms.validators import InputRequired, EqualTo, Email, Length, Optional
+from wtforms.validators import InputRequired, EqualTo, Email, Length, Optional, NumberRange
 
 from variables import *
 
@@ -39,28 +38,28 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 
-# Table for login credentials
+# DB Table for login credentials
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(37), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(280), nullable=False)
 
-    tldr = db.relationship('Tldr', backref='user')
+    tldr = db.relationship('Tldrdb', backref='user')
 
-
+# DB Table for Medison data
 class Medisondb(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.String(50), nullable=False)
     medication = db.Column(db.String(50), nullable=False)
     current_count = db.Column(db.Integer, nullable=False)
-    format = db.Column(db.Integer, nullable=False)
+    format = db.Column(db.Integer)
     daily = db.Column(db.Integer, nullable=False)
     duedate = db.Column(db.String(50), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-
-class Chronolog(db.Model):
+# DB Table for Chronolog page
+class Chronologdb(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date_time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     seizure_type = db.Column(db.String(50), nullable=False)
@@ -68,13 +67,13 @@ class Chronolog(db.Model):
     pre_ictal = db.Column(db.String(500))
     during = db.Column(db.String(500))
     post_ictal = db.Column(db.String(500))
-    triggers = db.Column(db.String(500), db.ForeignKey('tldr.triggers'))
+    triggers = db.Column(db.String(500), db.ForeignKey('tldrdb.triggers'))
     emergency_meds = db.Column(db.String(50))
     ambulance = db.Column(db.Boolean, default=False, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-
-class Tldr(db.Model):
+# DB Table for TLDR Report
+class Tldrdb(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     age = db.Column(db.String(50), nullable=False)   
@@ -99,11 +98,11 @@ class Tldr(db.Model):
     prev_meds = db.Column(db.String(50))
     pmeds_name = db.Column(db.String(500))
     diet = db.Column(db.String(50))
-    datetime = db.Column(db.DateTime, default=datetime.utcnow)
+    datetime = db.Column(db.String(50), default = strftime("%A, %d %b %Y %H:%M", localtime()))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-
-class Drwhen(db.Model):
+# DB Table for Dr When
+class Drwhendb(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date_time = db.Column(db.DateTime, nullable=False)
     doc_name = db.Column(db.String(50), nullable=False)
@@ -112,8 +111,6 @@ class Drwhen(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 # Login form
-
-
 class Login(FlaskForm):
     username = StringField('username', validators=[InputRequired('Missing Username'),
                            Length(min=4, max=37, message='Must be between 4 and 37 characters')])
@@ -122,8 +119,6 @@ class Login(FlaskForm):
     remember = BooleanField('remember me')
 
 # Registration form
-
-
 class Register(FlaskForm):
     username = StringField('username', validators=[InputRequired('Missing Username'),
                            Length(min=4, max=37, message='Must be between 4 and 37 characters')])
@@ -133,15 +128,13 @@ class Register(FlaskForm):
     confirm = PasswordField('Repeat Password', validators=[InputRequired('Please reconfirm your password')])
 
 
-# TLDRepeat form
+# TLDRepeat form (very long, many fields)
 required = validators = [InputRequired('Please provide this information')]
-
 option = validators = [Optional()]
-
 
 class Tldrform(FlaskForm):
     name = StringField('Name', required)
-    age = StringField('Age', required)
+    age = IntegerField('Age', required)
     startdate = StringField('Seizure Start Date', required)
     diagnosis = SelectField('Diagnosis', required, choices=[('have a'), ('don\'t have a')])
     family_history = SelectField('Diagnosis', required, choices=[('have a'), ('don\'t have any'), ('am not sure about')])
@@ -165,12 +158,18 @@ class Tldrform(FlaskForm):
     cmeds_name = SelectMultipleField('Current Medication', option, choices=MEDICATION)
     pmeds_name = SelectMultipleField('Previous Medication', option, choices=MEDICATION)
     
+# Medison form 
 class Medisonform(FlaskForm):
-    meds = StringField('Medicine Name', required)
-    format = IntegerField('Format', option)
-    daily = IntegerField('Units', required)
-    current_count = IntegerField('Count', required)
+    format = IntegerField('Format', validators=[InputRequired('Missing Username'), NumberRange(min=1, max=100000, message='Please enter a valid number')])
+    daily = IntegerField('Units', validators=[InputRequired('Missing Username'), NumberRange(min=1, max=100000, message='Please enter a valid number')])
+    current_count = IntegerField('Count', validators=[InputRequired('Missing Username'), NumberRange(min=1, max=100000, message='Please enter a valid number')])
 
+#DrWhen form
+class Drwhenform(FlaskForm):
+    when = DateTimeLocalField('Appointment Date', required,  format='%m/%d/%y')
+    who = StringField('Name of Healthcare Professional', required)
+    where = StringField('Appointment Location', required)
+    what = TextAreaField('Appointment summary')
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -199,38 +198,25 @@ def index():
 @app.route('/tldrepeat', methods=['GET', 'POST'])
 @login_required
 def tldrepeat():
-    file = Tldr.query.filter_by(user_id=current_user.id).order_by(Tldr.id.desc()).first()
+    file = Tldrdb.query.filter_by(user_id=current_user.id).order_by(Tldrdb.id.desc()).first()
     form = Tldrform()
     if request.method == 'POST':
         if form.validate_on_submit():
 
             pre_symptoms = unlist(form.pre_symptoms.data, PRE_ICTAL)
-            print(pre_symptoms)
-            
             post_symptoms = unlist(form.post_symptoms.data, POST_ICTAL)
-            print(post_symptoms)
-
             cmeds_name = unlist(form.cmeds_name.data, MEDICATION)
-            print(cmeds_name)
-            
             trigger_description = unlist(form.trigger_description.data, TRIGGERS)
-            print(trigger_description)
-            
             pmeds_name = unlist(form.pmeds_name.data, MEDICATION)
-            print(pmeds_name)
-            
             seizure_description = unlist(form.seizure_description.data, DURING)
-            print(seizure_description)
 
-
-            tldr = Tldr(name=form.name.data, age=form.age.data, startdate=form.startdate.data, diagnosis=form.diagnosis.data, diagnosis_description=form.diagnosis_description.data, 
+            tldr_info = Tldrdb(name=form.name.data, age=form.age.data, startdate=form.startdate.data, diagnosis=form.diagnosis.data, diagnosis_description=form.diagnosis_description.data, 
                         family_history=form.family_history.data, fh_description=form.fh_description.data, pre_ictal=form.pre_ictal.data, pre_extra=form.pre_extra.data, seizure_extra=form.seizure_extra.data, 
                         post_ictal=form.post_ictal.data, post_extra=form.post_extra.data, triggers=form.triggers.data, 
                         trigger_extra=form.trigger_extra.data, current_meds=form.current_meds.data, 
                         prev_meds=form.prev_meds.data, diet=form.diet.data, user_id=current_user.id, pre_symptoms=pre_symptoms, post_symptoms=post_symptoms, cmeds_name=cmeds_name, trigger_description=trigger_description, pmeds_name=pmeds_name, seizure_description=seizure_description)
-            db.session.add(tldr)
+            db.session.add(tldr_info)
             db.session.commit()
-            print(Tldr.query.filter_by(user_id=current_user.id).all())
 
             flash('Great Job!')
             return redirect('/tldrepeat')
@@ -244,10 +230,16 @@ def tldrepeat():
         return render_template('tldr.html', form=form, file=file)
 
 
-@app.route('/drwhen')
+@app.route('/drwhen', methods=['GET', 'POST'])
 @login_required
 def drwhen():
-    return render_template('drwhen.html')
+    form = Drwhenform()
+
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            return redirect('/drwhen', form=form)
+    
+    return render_template('drwhen.html', form=form)
 
 
 @app.route('/chronolog')
@@ -260,7 +252,7 @@ def chronolog():
 @login_required
 def medison():
     # Pulling data from TLDR info
-    tldrfile = Tldr.query.filter_by(user_id=current_user.id).order_by(Tldr.id.desc()).first()
+    tldrfile = Tldrdb.query.filter_by(user_id=current_user.id).order_by(Tldrdb.id.desc()).first()
     if tldrfile:
         meds = tldrfile.cmeds_name
         meds = meds.split(',')
@@ -273,27 +265,52 @@ def medison():
 
         form = Medisonform()
         
-        if request.method == 'POST'and form.validate_on_submit():
-            medication = form.meds.data
-            format = form.format.data
-            daily = form.daily.data
-            current_count = form.current_count.data
+        if request.method == 'POST':
+            
+            # If user wants to delete record row
+            med_id = request.form.get("delete")
+            if med_id:
+                delete_id = int(med_id[6:])
+                obj = Medisondb.query.filter_by(id=delete_id).first()
+                if obj is None:
+                    flash('Error')
+                    return redirect('/medison')     
+                db.session.delete(obj)
+                db.session.commit()
+                flash('Record row deleted')
+                return redirect('/medison')
+            
+            if form.validate_on_submit():
+                medication = request.form.get("medication")
+                if medication not in meds:
+                    flash('Please select a medication from the list')
+                    return redirect('/medison')
+                format = form.format.data
+                daily = form.daily.data
+                current_count = form.current_count.data
+                today = datetime.today()
+                daysmore = round(current_count/daily)
+                duedate = today + timedelta(days=daysmore)
+                duedate = duedate.strftime("%A, %d %b %Y") 
 
-            today = datetime.today()
-            daysmore = round(current_count/daily)
-            duedate = today + timedelta(days=daysmore)
-            duedate = duedate.strftime("%A, %d %b %Y") 
+                # Check if previous entry of medication/format already exists for user and if so, update it, instead of adding a new row
+                row_exist = Medisondb.query.filter_by(user_id=current_user.id, medication=medication, format=format).first()
+                if row_exist:
+                    db.session.query(Medisondb).filter_by(user_id=current_user.id, medication=medication, format=format).update(dict(timestamp=now, medication=medication, format=format, current_count=current_count, daily=daily, duedate=duedate))
+                    db.session.commit()
+                
+                # Adds a new row for the medication if it doesn't already exist
+                else:
+                    medison_info=Medisondb(user_id=current_user.id, timestamp=now, medication=medication, format=format, current_count=current_count, daily=daily, duedate=duedate)
+                    db.session.add(medison_info)
+                    db.session.commit()
 
-            print(medication, format, daily, current_count, duedate)
+                flash('You will have to go to the pharmacy for more {} on/before {}'.format(medication, duedate))
+            
+            return render_template('medison.html', now=now, tldrfile=tldrfile, medfile_exist=medfile_exist, medfile=medfile, meds=meds, form=form)
 
-            medison_info=Medisondb(user_id=current_user.id, timestamp=now, medication=medication, format=format, current_count=current_count, daily=daily, duedate=duedate)
-            db.session.add(medison_info)
-            db.session.commit()
-
-            flash('You will have to go to the pharmacy for more {} on/before {}'.format(medication, duedate))
-            return redirect('/medison')
-
-    return render_template('medison.html', now=now, tldrfile=tldrfile, medfile_exist=medfile_exist, medfile=medfile, meds=meds, form=form)
+        return render_template('medison.html', now=now, tldrfile=tldrfile, medfile_exist=medfile_exist, medfile=medfile, meds=meds, form=form)
+    return render_template('medison.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])

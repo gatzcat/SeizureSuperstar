@@ -1,8 +1,41 @@
+{% from "_formhelpers2.html" import render_field %}
 {% extends "layout.html" %}
 
 {% block title %}
 Dr When+
 {% endblock %}
 
+{% block jumbo %}
+    <h1 class="display-1">Dr When+</h1>
+    <p class="lead">All the details about your past and upcoming appointments with your health professionals in one spot!</p>
+{% endblock %}
+
 {% block body %}
+<div class="container">
+    <h3>New Appointment Details</h3>
+    <form action="/drwhen" method="post">
+        <table class="table table-hover table-striped">
+            {{ form.csrf_token }}
+            <div>{{render_field(form.who, class="form-control", placeholder="Eg. Neurologist Dr Lopez")}}</div>
+            <div>{{render_field(form.when, class="form-control")}}</div>
+            <div>{{render_field(form.where, class="form-control", placeholder="eg. Barcelona Hospital Clinic, Villaroel Centre 2nd Floor")}}</div>
+            <div>{{render_field(form.what, class="form-control", placeholder="eg. Meeting with Dr Lopez to discuss reducing my medication dosage and to schedule a new EEG session")}}</div>
+            <button class="btn-dark" type="submit">Submit</button>
+        </table>
+    </form>
+</div>
+
+<div class="container">
+    <h3>Upcoming Appointments</h3>
+    <div>
+        upcoming stuff
+    </div>
+</div>
+
+<div class="container">
+    <h3>Past Appointments</h3>
+    <div>
+        past stuff
+    </div>
+</div>
 {% endblock %}
