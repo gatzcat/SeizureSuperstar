@@ -13,9 +13,12 @@ The initial idea was to make the web app applicable for different chronic condit
 _________
 ## Features
 - [x] Working user creation and user login 
-- [ ] TLDRepeat:
+- [x] TLDRepeat:
     - A cloze passage style form for the user to provide their condition and seizure details. 
     - The aim of the form is to consolidate all the most relevant information about the user's condition so that they will not have to keep "repeating the same old story" each and every time they see a new health professional.
     - The data collected from the form can be used to feed the options of the other pages  
     - This will be the first step for the newly registered user.
-- [ ] 
+- [ ] Medison:
+    - Simple Calculator that will calculate from the number of remaining pills and daily dosage and display the date a pharmacy run must be done to replenish medication
+- [ ] Dr When+
+- [ ] Chronolog
