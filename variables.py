@@ -79,8 +79,24 @@ TRIGGERS = [
     ('14', 'Thirst')
 ]
 
+TYPES = [
+    ('1', 'Tonic-Clonic'),
+    ('2', 'Atonic'),
+    ('3', 'Tonic'),
+    ('4', 'Clonic'),
+    ('5', 'Myoclonic'),
+    ('6', 'Bilateral Tonic-Clonic'),
+    ('7', 'Focal Aware'),
+    ('8', 'Focal Impaired Awareness'),
+    ('9', 'Absence'),
+    ('10', 'Atypical Absence'),
+    ('11', 'Gelastic/Dacrystic'),
+    ('12', 'Febrile'),
+    ('13', 'Unknown/Not sure')
+]
+
 # The list could have been hard coded but calling from a CSV probably allows for easier updating when new medications are released
-with open("meds.csv", "r") as file:
+with open("static/meds.csv", "r") as file:
     reader = csv.reader(file)
     list = []
     x = 1

@@ -18,34 +18,25 @@ Medison
         <p><h3>Each day, I take the following medication:</h3></p>
 
         {% if medfile_exist %}
-        <div class="table-responsive">
-            <table class="table table-hover table-striped">
-                <thead class="table-dark">
-                    <tr>
-                        <td>Medication Name</td>
-                        <td>Format</td>
-                        <td>Daily Dosage</td>
-                        <td>Go to the pharmacy on/before</td>
-                        <td colspan="2">Last Updated</td>
-                    </tr>
-                </thead>
-                {% for m in medfile %}
-                    <tr>
-                        <td>{{ m.medication }}</td>
-                        <td>{{ m.format }} mg</td>
-                        <td>{{ m.daily }} units</td>
-                        <td style="color: orangered">{{ m.duedate }}</td>
-                        <td>{{ m.timestamp }}</td>
-                        <td>
-                            <form action="/medison" method="post">
-                                <button class="btn-light" name="delete" value="delete {{ m.id }}">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </table>
+        <div class="row">
+            {% for m in medfile %}
+                <div class="card text-center" style="width: 18rem;">
+                    <div class="card-body">
+                    <h5 class="card-title">{{ m.medication }}, {{ m.format }}mg</h5>
+                    <p class="card-text">
+                        {{ m.daily }} units a day
+                        <p style="color: orangered"> Runs out on {{ m.duedate }}</p>
+                    </p>
+                    <form action="/medison" method="post">
+                        <button class="btn btn-outline-dark" name="delete" value="delete {{ m.id }}">Delete</button>
+                    </form>
+                    </div>
+                    <div class="card-footer"><small class="text-muted">Updated<br>{{ m.timestamp }}</small></div>
+                </div>
+            {% endfor %}
         </div>
-        <h3>Update?</h3>
+        <p><h3>Update?</h3></p>
+        
         {% else %}
         No previous information retrieved.
         {% endif %}
@@ -80,7 +71,7 @@ Medison
     
                                 <td>{{ render_field(form.current_count, class="tldr  form-inline")}} unit(s)</td>
                                 
-                                <td><button class="btn-dark" type="submit">Calculate</button></td>
+                                <td><button class="btn btn-dark" type="submit">Calculate</button></td>
                             </form>
                         </tr>
                     </p>

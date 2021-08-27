@@ -1,4 +1,4 @@
-{% from "_formhelpers2.html" import render_field %}
+{% from "_formhelpers.html" import render_field, render_fieldwithlabel %}
 {% extends "layout.html" %}
 
 {% block title %}
@@ -11,31 +11,41 @@ Dr When+
 {% endblock %}
 
 {% block body %}
-<div class="container">
+<div class="container mb-3">
     <h3>New Appointment Details</h3>
     <form action="/drwhen" method="post">
-        <table class="table table-hover table-striped">
             {{ form.csrf_token }}
-            <div>{{render_field(form.who, class="form-control", placeholder="Eg. Neurologist Dr Lopez")}}</div>
-            <div>{{render_field(form.when, class="form-control")}}</div>
-            <div>{{render_field(form.where, class="form-control", placeholder="eg. Barcelona Hospital Clinic, Villaroel Centre 2nd Floor")}}</div>
-            <div>{{render_field(form.what, class="form-control", placeholder="eg. Meeting with Dr Lopez to discuss reducing my medication dosage and to schedule a new EEG session")}}</div>
-            <button class="btn-dark" type="submit">Submit</button>
-        </table>
+            <div class="input-group md-3">
+                {{ render_fieldwithlabel(form.who, class="form-control", placeholder="Eg. Neurologist Dr Lopez") }}
+                {{ render_fieldwithlabel(form.when, class="form-control") }}
+            </div>
+            
+            <div class="input-group md-3">{{ render_fieldwithlabel(form.where, class="form-control", placeholder="eg. Barcelona Hospital Clinic, Villaroel Centre 2nd Floor") }}</div>
+            <div>{{ render_fieldwithlabel(form.what, class="form-control", placeholder="eg. Meeting with Dr Lopez to discuss reducing my medication dosage and to schedule a new EEG session") }}</div>
+            <button class="btn btn-dark" type="submit">Submit</button>
     </form>
 </div>
-
-<div class="container">
-    <h3>Upcoming Appointments</h3>
-    <div>
-        upcoming stuff
+{% if drwhen_exist %}
+    <div class="p-3 container">
+        <h3>Your Appointments</h3>
+        <table class="table table-hover table-striped">
+        
+        {% for appointment in appointments %}
+            <tr>
+                <form action="/drwhen" method="post">
+                    {{ form.csrf_token }}
+                    <td>{{ appointment.when_row }} {{ render_field(form.when, class="form-control", value=appointment.when_row) }}</td>
+                    <td>{{ render_field(form.who, class="form-control", value=appointment.who_row) }}</td>
+                    <td>{{ render_field(form.where, class="form-control", value=appointment.where_row) }}</td>
+                    <td>{{ render_field(form.what, class="form-control", placeholder=appointment.what_row, value=appointment.what_row) }}</td>
+                    <td><button class="btn btn-outline-dark" name="update" value="update {{appointment.id}}" type="submit">Update</button></td>
+                </form>
+                <td><form action="/drwhen" method="post"><button class="btn btn-outline-dark" name="delete" value="delete {{appointment.id}}" type="submit">Delete</button></form></td>
+                
+            </tr>
+        {% endfor %}
+        </table>
     </div>
-</div>
+{% endif %}
 
-<div class="container">
-    <h3>Past Appointments</h3>
-    <div>
-        past stuff
-    </div>
-</div>
 {% endblock %}

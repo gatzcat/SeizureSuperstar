@@ -3,10 +3,10 @@ from datetime import datetime, timedelta
 from time import localtime, strftime
 from flask import Flask, flash, redirect, render_template, request
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy, _wrap_with_default_query_class
 from flask_wtf import FlaskForm
 from werkzeug.security import check_password_hash, generate_password_hash
-from wtforms import BooleanField, HiddenField, SelectField, StringField, PasswordField
+from wtforms import BooleanField, RadioField, SelectField, StringField, PasswordField
 from wtforms.fields.html5 import DateTimeLocalField
 from wtforms.fields.core import IntegerField, SelectMultipleField
 from wtforms.fields.simple import TextAreaField
@@ -61,15 +61,19 @@ class Medisondb(db.Model):
 # DB Table for Chronolog page
 class Chronologdb(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    date_time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    datetime = db.Column(db.DateTime, nullable=False)
+    s_hour = db.Column(db.Integer, nullable=False)
+    s_minutes = db.Column(db.Integer, nullable=False)
+    s_seconds = db.Column(db.Integer, nullable=False)
+    location =  db.Column(db.String(50), nullable=False)
     seizure_type = db.Column(db.String(50), nullable=False)
-    duration = db.Column(db.Integer, nullable=False)
-    pre_ictal = db.Column(db.String(500))
-    during = db.Column(db.String(500))
-    post_ictal = db.Column(db.String(500))
-    triggers = db.Column(db.String(500), db.ForeignKey('tldrdb.triggers'))
-    emergency_meds = db.Column(db.String(50))
-    ambulance = db.Column(db.Boolean, default=False, nullable=False)
+    triggers = db.Column(db.String(50), nullable=True)
+    aura =  db.Column(db.Boolean, nullable=False)
+    hospital = db.Column(db.Boolean, nullable=False)
+    emergency_meds = db.Column(db.Boolean, nullable=False)
+    r_hour = db.Column(db.Integer, nullable=False)
+    r_minutes = db.Column(db.Integer, nullable=False)
+    r_seconds = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 # DB Table for TLDR Report
@@ -79,6 +83,7 @@ class Tldrdb(db.Model):
     age = db.Column(db.String(50), nullable=False)   
     startdate = db.Column(db.String(50), nullable=False)
     diagnosis = db.Column(db.String(500))
+    types = db.Column(db.String(100))
     diagnosis_description = db.Column(db.String(500))
     family_history = db.Column(db.String(50))
     fh_description = db.Column(db.String(500))
@@ -104,10 +109,10 @@ class Tldrdb(db.Model):
 # DB Table for Dr When
 class Drwhendb(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    date_time = db.Column(db.DateTime, nullable=False)
-    doc_name = db.Column(db.String(50), nullable=False)
-    hosp_name = db.Column(db.String(100), nullable=False)
-    appointment_type = db.Column(db.String(50), nullable=False)
+    when_row = db.Column(db.DateTime, nullable=False)
+    who_row = db.Column(db.String(50), nullable=False)
+    where_row = db.Column(db.String(100), nullable=False)
+    what_row = db.Column(db.String(50), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 # Login form
@@ -137,6 +142,7 @@ class Tldrform(FlaskForm):
     age = IntegerField('Age', required)
     startdate = StringField('Seizure Start Date', required)
     diagnosis = SelectField('Diagnosis', required, choices=[('have a'), ('don\'t have a')])
+    types = SelectMultipleField('Seizure Types', option, choices=TYPES)
     family_history = SelectField('Diagnosis', required, choices=[('have a'), ('don\'t have any'), ('am not sure about')])
     pre_ictal = SelectField('Any Pre-seizure Symptoms?', required, choices=[('always can'), ('occasionally can'), ('cannot')])
     seizure_description = SelectMultipleField('Seizure Description', required, choices=DURING)
@@ -164,12 +170,29 @@ class Medisonform(FlaskForm):
     daily = IntegerField('Units', validators=[InputRequired('Missing Username'), NumberRange(min=1, max=100000, message='Please enter a valid number')])
     current_count = IntegerField('Count', validators=[InputRequired('Missing Username'), NumberRange(min=1, max=100000, message='Please enter a valid number')])
 
-#DrWhen form
+# DrWhen form
 class Drwhenform(FlaskForm):
-    when = DateTimeLocalField('Appointment Date', required,  format='%m/%d/%y')
+    when = DateTimeLocalField('Appointment Date', required,  format='%Y-%m-%dT%H:%M', default=datetime.today())
     who = StringField('Name of Healthcare Professional', required)
     where = StringField('Appointment Location', required)
-    what = TextAreaField('Appointment summary')
+    what = StringField('Appointment summary', required)
+
+# Chronolog form
+class Chronologform(FlaskForm):
+    datetime = DateTimeLocalField('When did it happen?', required,  format='%Y-%m-%dT%H:%M')
+    s_hour = IntegerField("Hour(s) ", validators=[InputRequired('Missing Input'), NumberRange(min=0, max=23, message='Please enter a valid number')])
+    s_minutes = IntegerField("Minute(s) ", validators=[InputRequired('Missing Input'), NumberRange(min=0, max=59, message='Please enter a valid number')] )
+    s_seconds = IntegerField("Seconds(s) ", validators=[InputRequired('Missing Input'), NumberRange(min=0, max=59, message='Please enter a valid number')])
+    location = SelectField('Location', option, choices=[('Home'), ('Work/School'), ('Outside') ])
+    othertypes = SelectMultipleField('Specify Other', option, choices=TYPES)
+    othertriggers = SelectMultipleField('Specify Other', option, choices=TRIGGERS)
+    aura = BooleanField('Aura')
+    hospital = BooleanField('Hospital')
+    emergency_meds = BooleanField('Emergency Medication')
+    r_hour = IntegerField("Hour(s) ", default="0", validators=[NumberRange(min=0, max=23, message='Please enter a valid number')])
+    r_minutes = IntegerField("Minute(s) ", default="0", validators=[NumberRange(min=0, max=59, message='Please enter a valid number')] )
+    r_seconds = IntegerField("Seconds(s) ", default="0", validators=[NumberRange(min=0, max=59, message='Please enter a valid number')])
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -198,7 +221,7 @@ def index():
 @app.route('/tldrepeat', methods=['GET', 'POST'])
 @login_required
 def tldrepeat():
-    file = Tldrdb.query.filter_by(user_id=current_user.id).order_by(Tldrdb.id.desc()).first()
+    file = Tldrdb.query.filter_by(user_id=current_user.id).first()
     form = Tldrform()
     if request.method == 'POST':
         if form.validate_on_submit():
@@ -209,9 +232,10 @@ def tldrepeat():
             trigger_description = unlist(form.trigger_description.data, TRIGGERS)
             pmeds_name = unlist(form.pmeds_name.data, MEDICATION)
             seizure_description = unlist(form.seizure_description.data, DURING)
+            types = unlist(form.types.data, TYPES)
 
             tldr_info = Tldrdb(name=form.name.data, age=form.age.data, startdate=form.startdate.data, diagnosis=form.diagnosis.data, diagnosis_description=form.diagnosis_description.data, 
-                        family_history=form.family_history.data, fh_description=form.fh_description.data, pre_ictal=form.pre_ictal.data, pre_extra=form.pre_extra.data, seizure_extra=form.seizure_extra.data, 
+                        family_history=form.family_history.data, types=types, fh_description=form.fh_description.data, pre_ictal=form.pre_ictal.data, pre_extra=form.pre_extra.data, seizure_extra=form.seizure_extra.data, 
                         post_ictal=form.post_ictal.data, post_extra=form.post_extra.data, triggers=form.triggers.data, 
                         trigger_extra=form.trigger_extra.data, current_meds=form.current_meds.data, 
                         prev_meds=form.prev_meds.data, diet=form.diet.data, user_id=current_user.id, pre_symptoms=pre_symptoms, post_symptoms=post_symptoms, cmeds_name=cmeds_name, trigger_description=trigger_description, pmeds_name=pmeds_name, seizure_description=seizure_description)
@@ -234,18 +258,109 @@ def tldrepeat():
 @login_required
 def drwhen():
     form = Drwhenform()
+    now = datetime.today()
 
     if request.method == 'POST':
+        
+        # If user wants to delete record row
+        row_id = request.form.get("delete")
+        if row_id:
+            delete_id = int(row_id[6:])
+            obj = Drwhendb.query.filter_by(id=delete_id).first()
+            if obj is None:
+                flash('Error')
+                return redirect('/medison')     
+            db.session.delete(obj)
+            db.session.commit()
+            flash('Appointment deleted')
+
+        
         if form.validate_on_submit():
-            return redirect('/drwhen', form=form)
-    
+            # If user wants to update record row
+            row_id = request.form.get("update")
+            if row_id:
+                update_id = int(row_id[6:])
+                obj = Drwhendb.query.filter_by(id=update_id).first()
+                if obj is None:
+                    flash('Error')
+                    return redirect('/drwhen')
+                
+                db.session.query(Drwhendb).filter_by(id=update_id).update(dict(who_row=who, what_row=what, where_row=where, when_row=when))
+                db.session.commit()
+                flash('Appointment updated')
+
+
+            # Adding a new appointment
+            else:
+                appointment = Drwhendb(user_id=current_user.id, who_row=form.who.data, what_row=form.what.data, where_row=form.where.data, when_row=form.when.data)
+                db.session.add(appointment)
+                db.session.commit()
+                flash('Appointment added successfully!')
+            return redirect('/drwhen')
+        
+    # Check for existing appointments
+    drwhen_exist = Drwhendb.query.filter_by(user_id=current_user.id).first() 
+    if drwhen_exist is not None:
+        appointments = Drwhendb.query.filter_by(user_id=current_user.id).order_by(Drwhendb.when_row.desc())
+        return render_template('drwhen.html', form=form, appointments=appointments, drwhen_exist=drwhen_exist)
+
     return render_template('drwhen.html', form=form)
 
 
-@app.route('/chronolog')
+@app.route('/chronolog', methods=['GET', 'POST'])
 @login_required
 def chronolog():
-    return render_template('chronolog.html')
+    
+    form = Chronologform()
+    file = Tldrdb.query.filter_by(user_id=current_user.id).order_by(Tldrdb.id.desc()).first()
+    
+    if file:
+        types = (file.types).split(',')
+        triggers = (file.trigger_description).split(',')
+        trigger_extra = file.trigger_extra
+
+        log_exist = Chronologdb.query.filter_by(user_id=current_user.id).first()
+        if log_exist is not None:
+            logs = Chronologdb.query.filter_by(user_id=current_user.id).order_by(Chronologdb.datetime.desc())
+
+        if request.method == 'POST':
+
+            # If user wants to delete record row
+            row_id = request.form.get("delete")
+            if row_id:
+                delete_id = int(row_id[6:])
+                obj = Chronologdb.query.filter_by(id=delete_id).first()
+                if obj is None:
+                    flash('Error')
+                db.session.delete(obj)
+                db.session.commit()
+                flash('Appointment deleted')
+                return redirect('/chronolog')
+                
+            if form.validate_on_submit():
+                if form.othertypes.data:
+                    seizure_type = request.form.get("type") + ', ' + unlist(form.othertypes.data, TYPES)
+                else:
+                    seizure_type = request.form.get(    "type")
+
+                if form.othertriggers.data:
+                    triggers = request.form.get("trigger") + ', ' + unlist(form.othertriggers.data, TRIGGERS)
+                else:
+                    triggers = request.form.get("trigger")
+
+                seizure=Chronologdb(user_id=current_user.id, datetime=form.datetime.data, s_hour=form.s_hour.data, s_minutes=form.s_minutes.data, s_seconds=form.s_seconds.data, location=form.location.data, seizure_type=seizure_type, triggers=triggers, aura=form.aura.data, hospital=form.hospital.data, emergency_meds=form.emergency_meds.data, r_hour=form.r_hour.data, r_minutes=form.r_minutes.data, r_seconds=form.r_seconds.data)
+                db.session.add(seizure)
+                db.session.commit()
+                flash('Seizure logged successfully!')
+            else: 
+                flash('Invalid Input! Please retry.')
+
+            return redirect('/chronolog')
+        return render_template('chronolog.html', form=form, logs=logs, log_exist=log_exist, file=file, types=types, triggers=triggers, trigger_extra=trigger_extra)
+
+        
+
+    return render_template('chronolog.html', form=form, file=file)
 
 
 @app.route('/medison', methods=['GET', 'POST'])
