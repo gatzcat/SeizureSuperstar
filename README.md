@@ -1,5 +1,5 @@
 # SEIZURE SUPERSTAR
-#### Video Demo:  TODO <URL HERE>
+#### Video Demo:  https://www.youtube.com/watch?v=EZsmZ-JI3xU
 #### Description:
 
 **Last Updated: 27AUG**
